@@ -3,15 +3,15 @@ from collections.abc import AsyncIterator
 from fastapi.testclient import TestClient
 
 
-async def _mock_stream_stt(audio_chunks: AsyncIterator[bytes], **kwargs):
-    async for _ in audio_chunks:
+async def _mock_stream_stt(audio_queue, **kwargs):
+    async for _ in iter([]):
         pass
     return
     yield
 
 
 def test_websocket_connect_send_disconnect(client: TestClient, monkeypatch):
-    """Connect to /ws/stream, send binary chunks, disconnect. Mocks DB and STT so no MongoDB/Google required."""
+    """Connect to /ws/stream, send binary chunks, disconnect. Mocks DB and STT so no MongoDB/API keys required."""
     from app.routes import stream as stream_module
     from app.services import stt as stt_module
     created = []

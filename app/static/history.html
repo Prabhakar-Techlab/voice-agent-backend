@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transcription History</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f172a; --surface: #1e293b; --border: #334155;
+      --text: #f1f5f9; --muted: #94a3b8; --accent: #6366f1; --green: #22c55e;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; }
+    .container { width: 100%; max-width: 820px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
+    header h1 { font-size: 1.5rem; font-weight: 700; }
+    header h1 span { color: var(--accent); }
+    .btn-back { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 0.35rem 0.9rem; border-radius: 999px; font-size: 0.8rem; cursor: pointer; text-decoration: none; }
+    .btn-back:hover { border-color: var(--accent); color: var(--text); }
+
+    .session-card { background: var(--surface); border: 1px solid var(--border); border-radius: 1rem; margin-bottom: 1rem; overflow: hidden; }
+    .session-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; cursor: pointer; }
+    .session-header:hover { background: rgba(99,102,241,0.06); }
+    .session-meta { display: flex; flex-direction: column; gap: 0.2rem; }
+    .session-date { font-size: 0.95rem; font-weight: 600; }
+    .session-info { font-size: 0.75rem; color: var(--muted); display: flex; gap: 1rem; }
+    .session-arrow { color: var(--muted); font-size: 0.8rem; transition: transform 0.2s; }
+    .session-arrow.open { transform: rotate(90deg); }
+
+    .utterances { display: none; border-top: 1px solid var(--border); padding: 1rem 1.25rem; }
+    .utterances.open { display: block; }
+    .utterance { padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; border-radius: 0.4rem; background: rgba(99,102,241,0.06); border-left: 3px solid var(--accent); }
+    .utterance .u-meta { font-size: 0.7rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .utterance .u-text { font-size: 0.95rem; line-height: 1.5; }
+
+    .empty { color: var(--muted); text-align: center; margin-top: 5rem; font-size: .95rem; }
+    .loading { color: var(--muted); text-align: center; margin-top: 3rem; }
+
+    .copy-btn { margin-top: 0.75rem; background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.3rem 0.8rem; border-radius: 0.4rem; font-size: 0.75rem; cursor: pointer; }
+    .copy-btn:hover { border-color: var(--accent); color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Transcription <span>History</span></h1>
+    <a href="/" class="btn-back">Back to Recorder</a>
+  </header>
+  <div id="content"><div class="loading">Loading sessions...</div></div>
+</div>
+
+<script>
+  var content = document.getElementById('content');
+
+  function fmt(iso) {
+    if (!iso) return 'ongoing';
+    var d = new Date(iso);
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+  }
+
+  function duration(s, e) {
+    if (!s || !e) return '';
+    var sec = Math.round((new Date(e) - new Date(s)) / 1000);
+    if (sec < 60) return sec + 's';
+    return Math.floor(sec/60) + 'm ' + (sec%60) + 's';
+  }
+
+  function copyText(sessionId) {
+    var texts = [];
+    document.querySelectorAll('[data-sid="' + sessionId + '"] .u-text').forEach(function(el) {
+      texts.push(el.textContent);
+    });
+    navigator.clipboard.writeText(texts.join('\n')).then(function() { alert('Copied!'); });
+  }
+
+  function toggleSession(sessionId) {
+    var uttsEl = document.getElementById('utts-' + sessionId);
+    var arrow  = document.getElementById('arrow-' + sessionId);
+    if (uttsEl.classList.contains('open')) {
+      uttsEl.classList.remove('open');
+      arrow.classList.remove('open');
+      return;
+    }
+    arrow.classList.add('open');
+    if (uttsEl.dataset.loaded) { uttsEl.classList.add('open'); return; }
+
+    uttsEl.innerHTML = '<div style="color:var(--muted);font-size:.85rem">Loading...</div>';
+    uttsEl.classList.add('open');
+
+    fetch('/api/history/sessions/' + sessionId)
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        uttsEl.dataset.loaded = '1';
+        if (!data.utterances || data.utterances.length === 0) {
+          uttsEl.innerHTML = '<div style="color:var(--muted);font-size:.85rem">No utterances recorded.</div>';
+          return;
+        }
+        var html = '';
+        data.utterances.forEach(function(u) {
+          var t0 = u.start_time != null ? (+u.start_time).toFixed(1) : '?';
+          var t1 = u.end_time   != null ? (+u.end_time).toFixed(1)   : '?';
+          html += '<div class="utterance" data-sid="' + sessionId + '">' +
+            '<div class="u-meta">' + t0 + 's - ' + t1 + 's</div>' +
+            '<div class="u-text">' + u.text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>' +
+            '</div>';
+        });
+        html += '<button class="copy-btn" onclick="copyText(\'' + sessionId + '\')">Copy all text</button>';
+        uttsEl.innerHTML = html;
+      })
+      .catch(function() { uttsEl.innerHTML = '<div style="color:red;font-size:.85rem">Failed to load.</div>'; });
+  }
+
+  fetch('/api/history/sessions')
+    .then(function(r){ return r.json(); })
+    .then(function(sessions) {
+      if (!sessions.length) {
+        content.innerHTML = '<div class="empty">No sessions yet. Go record something!</div>';
+        return;
+      }
+      var html = '';
+      sessions.forEach(function(s) {
+        var dur = duration(s.started_at, s.ended_at);
+        html += '<div class="session-card">' +
+          '<div class="session-header" onclick="toggleSession(\'' + s.id + '\')">' +
+            '<div class="session-meta">' +
+              '<div class="session-date">' + fmt(s.started_at) + '</div>' +
+              '<div class="session-info">' +
+                (dur ? '<span>Duration: ' + dur + '</span>' : '<span style="color:var(--green)">Ongoing</span>') +
+              '</div>' +
+            '</div>' +
+            '<span class="session-arrow" id="arrow-' + s.id + '">&#9654;</span>' +
+          '</div>' +
+          '<div class="utterances" id="utts-' + s.id + '"></div>' +
+        '</div>';
+      });
+      content.innerHTML = html;
+    })
+    .catch(function() { content.innerHTML = '<div class="empty">Could not load history. Is the server running?</div>'; });
+</script>
+</body>
+</html>

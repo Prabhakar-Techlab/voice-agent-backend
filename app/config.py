@@ -8,12 +8,20 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_db_name: str = "stt_conversations"
 
-    # Google Cloud Speech-to-Text (use default credentials or set path to service account JSON)
-    google_application_credentials: str | None = None
-    google_cloud_project_id: str | None = None
+    # Default STT provider (sarvam | groq)
+    stt_provider: str = "sarvam"
 
-    # Optional: diarization speaker count (None = auto)
-    diarization_speaker_count: int | None = None
+    # Sarvam AI
+    sarvam_api_key: str | None = None
+
+    # Groq (Whisper)
+    groq_api_key: str | None = None
+
+    # Deepgram (Nova-2)
+    deepgram_api_key: str | None = None
+
+    # AssemblyAI
+    assemblyai_api_key: str | None = None
 
     # Anthropic Claude API
     anthropic_api_key: str | None = None

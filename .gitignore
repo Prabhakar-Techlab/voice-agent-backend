@@ -36,3 +36,7 @@ build/
 .cursor/
 
 *service_account_config.json
+
+# Scratch / local test scripts
+mic_test.py
+test_ws.py

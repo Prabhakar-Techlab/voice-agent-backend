@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VoiceScribe — Real-time Speech to Text</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#080d1a;--surface:#0f1729;--card:#141d35;--border:#1e2d4d;
+      --text:#e8eaf6;--muted:#5c7099;--soft:#8da0c4;
+      --accent:#4f8ef7;--accent-glow:rgba(79,142,247,.25);
+      --green:#23d18b;--red:#f25f5c;--yellow:#f4c542;
+      --purple:#a855f7;--orange:#fb923c;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      background:var(--bg);color:var(--text);
+      font-family:'Inter',system-ui,sans-serif;
+      min-height:100vh;display:flex;flex-direction:column;
+      align-items:center;padding:2rem 1rem;
+      background-image:radial-gradient(ellipse at 20% 0%,rgba(79,142,247,.06) 0%,transparent 60%),
+                       radial-gradient(ellipse at 80% 100%,rgba(168,85,247,.04) 0%,transparent 60%);
+    }
+    .container{width:100%;max-width:860px}
+
+    /* ── TOP NAV ── */
+    nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.5rem}
+    .logo{display:flex;align-items:center;gap:.6rem}
+    .logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4f8ef7,#a855f7);display:flex;align-items:center;justify-content:center;font-size:1rem}
+    .logo-text{font-size:1.1rem;font-weight:700;letter-spacing:-.3px}
+    .logo-text span{color:var(--accent)}
+    .nav-right{display:flex;align-items:center;gap:.75rem}
+    .nav-btn{background:var(--card);border:1px solid var(--border);color:var(--soft);padding:.35rem .9rem;border-radius:8px;font-size:.8rem;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s}
+    .nav-btn:hover{border-color:var(--accent);color:var(--text);background:rgba(79,142,247,.08)}
+    .status-pill{display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:500;padding:.3rem .85rem;border-radius:8px;background:var(--card);border:1px solid var(--border);color:var(--muted)}
+    .status-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+    .status-pill.live{border-color:rgba(35,209,139,.3);color:var(--green)}
+    .status-pill.live .dot{background:var(--green);animation:blink 1.4s ease infinite}
+    .status-pill.processing{border-color:rgba(244,197,66,.3);color:var(--yellow)}
+    .status-pill.processing .dot{background:var(--yellow);animation:blink .7s ease infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+    /* ── PROVIDER CARDS ── */
+    .provider-section{margin-bottom:1.25rem}
+    .section-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.6rem}
+    .provider-cards{display:flex;gap:.6rem;flex-wrap:wrap}
+    .provider-card{
+      flex:1;min-width:120px;padding:.65rem .9rem;border-radius:10px;
+      background:var(--card);border:2px solid var(--border);
+      cursor:pointer;transition:all .18s;text-align:left;
+    }
+    .provider-card:hover{border-color:var(--accent);background:rgba(79,142,247,.06)}
+    .provider-card.active{border-color:var(--accent);background:rgba(79,142,247,.1);box-shadow:0 0 0 3px var(--accent-glow)}
+    .provider-card .pc-name{font-size:.82rem;font-weight:600;color:var(--text)}
+    .provider-card .pc-tag{font-size:.68rem;color:var(--muted);margin-top:.15rem}
+    .provider-card .pc-badge{display:inline-block;font-size:.6rem;font-weight:600;padding:.1rem .4rem;border-radius:4px;margin-top:.3rem;text-transform:uppercase;letter-spacing:.04em}
+    .badge-free{background:rgba(35,209,139,.15);color:var(--green)}
+    .badge-fast{background:rgba(79,142,247,.15);color:var(--accent)}
+    .badge-india{background:rgba(248,113,113,.15);color:#f87171}
+    .badge-accurate{background:rgba(168,85,247,.15);color:var(--purple)}
+
+    /* ── CONTROLS ROW ── */
+    .controls-row{display:flex;align-items:flex-end;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap}
+    .field{display:flex;flex-direction:column;gap:.35rem}
+    .field label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    select{
+      background:var(--card);border:1.5px solid var(--border);color:var(--text);
+      padding:.5rem .75rem;border-radius:9px;font-size:.88rem;font-family:inherit;
+      cursor:pointer;outline:none;transition:border-color .2s;
+    }
+    select:focus{border-color:var(--accent)}
+
+    /* ── RECORD BUTTON ── */
+    .btn-record{
+      margin-left:auto;display:flex;align-items:center;gap:.65rem;
+      padding:.7rem 1.8rem;border-radius:12px;font-size:.95rem;font-weight:600;
+      font-family:inherit;cursor:pointer;border:none;
+      background:linear-gradient(135deg,#4f8ef7,#6366f1);
+      color:#fff;transition:all .2s;box-shadow:0 4px 20px rgba(79,142,247,.3);
+    }
+    .btn-record:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(79,142,247,.4)}
+    .btn-record:active{transform:translateY(0)}
+    .btn-record.recording{background:linear-gradient(135deg,#f25f5c,#e11d48);box-shadow:0 4px 20px rgba(242,95,92,.3)}
+    .btn-record.recording:hover{box-shadow:0 6px 24px rgba(242,95,92,.4)}
+
+    /* ── VOLUME BAR ── */
+    .volume-wrap{display:none;align-items:center;gap:.75rem;width:100%;padding:.4rem 0}
+    .vol-label{font-size:.7rem;color:var(--muted);font-weight:500;width:3.5rem;flex-shrink:0}
+    .vol-track{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+    .vol-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:3px;transition:width .07s linear}
+    .vol-fill.loud{background:linear-gradient(90deg,var(--yellow),var(--red))}
+
+    /* ── TRANSCRIPT BOX ── */
+    .transcript-wrap{
+      background:var(--surface);border:1.5px solid var(--border);border-radius:16px;
+      min-height:340px;max-height:500px;overflow-y:auto;
+      margin-bottom:1rem;position:relative;
+    }
+    .transcript-inner{padding:1.5rem}
+    .empty-state{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      height:280px;gap:.75rem;color:var(--muted);
+    }
+    .empty-icon{font-size:2.5rem;opacity:.4}
+    .empty-text{font-size:.9rem;text-align:center;line-height:1.6;max-width:260px}
+
+    /* Processing indicator */
+    .processing-row{
+      display:none;align-items:center;gap:.6rem;
+      padding:.6rem 1rem;background:rgba(244,197,66,.06);
+      border-radius:8px;border:1px solid rgba(244,197,66,.2);
+      margin-bottom:.75rem;font-size:.82rem;color:var(--yellow);
+    }
+    .processing-row.show{display:flex}
+    .processing-dots span{animation:blink 1.2s ease infinite}
+    .processing-dots span:nth-child(2){animation-delay:.2s}
+    .processing-dots span:nth-child(3){animation-delay:.4s}
+
+    /* LLM toggle */
+    .llm-toggle{display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none;font-size:.82rem;color:var(--soft);font-weight:500}
+    .llm-toggle input{display:none}
+    .llm-track{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
+    .llm-track::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+    .llm-toggle input:checked + .llm-track{background:var(--purple)}
+    .llm-toggle input:checked + .llm-track::after{transform:translateX(16px)}
+
+    /* LLM reply bubble */
+    .llm-reply{
+      margin-top:.5rem;padding:.75rem 1rem;border-radius:10px;
+      background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);
+      font-size:.92rem;line-height:1.6;color:var(--text);
+      animation:slideUp .25s ease;
+    }
+    .llm-reply .llm-label{font-size:.68rem;font-weight:600;color:var(--purple);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem}
+
+    /* Continuous transcript text */
+    .transcript-text{
+      font-size:1.05rem;line-height:1.8;color:var(--text);
+      white-space:pre-wrap;word-break:break-word;
+    }
+    .transcript-text .word-new{
+      animation:fadeWord .4s ease;
+    }
+    @keyframes fadeWord{from{color:var(--accent)}to{color:var(--text)}}
+
+    /* ── STATS BAR ── */
+    .stats-bar{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;padding:.25rem .1rem}
+    .stat{display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:var(--muted)}
+    .stat-val{font-weight:600;color:var(--soft)}
+    .stat-divider{width:1px;height:14px;background:var(--border)}
+
+    /* scrollbar */
+    .transcript-wrap::-webkit-scrollbar{width:5px}
+    .transcript-wrap::-webkit-scrollbar-track{background:transparent}
+    .transcript-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+    /* ── TRANSCRIPT ACTION BAR ── */
+    .transcript-actions{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+    .action-btn{background:var(--card);border:1px solid var(--border);color:var(--soft);padding:.3rem .8rem;border-radius:8px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
+    .action-btn:hover{border-color:var(--accent);color:var(--text);background:rgba(79,142,247,.08)}
+    .action-btn.danger:hover{border-color:var(--red);color:var(--red)}
+    .scroll-btn{margin-left:auto;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:.3rem .8rem;border-radius:8px;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
+    .scroll-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(79,142,247,.08)}
+
+    /* ── SPEAKER LABELS ── */
+    .speaker-label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-top:.85rem;margin-bottom:.1rem;padding-left:.1rem}
+    .speaker-label:first-child{margin-top:0}
+    .spk-0{color:var(--accent)}.spk-1{color:var(--green)}
+    .spk-2{color:var(--orange)}.spk-3{color:var(--purple)}.spk-4{color:var(--yellow)}
+
+    /* toast */
+    .toast{
+      display:none;position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+      background:#1a0a0a;border:1px solid rgba(242,95,92,.4);color:#f87171;
+      padding:.65rem 1.4rem;border-radius:10px;font-size:.85rem;z-index:100;
+      box-shadow:0 8px 32px rgba(0,0,0,.4);
+    }
+    .toast.show{display:block;animation:slideUp .2s ease}
+    .toast.success{background:#0a1a0a;border-color:rgba(35,209,139,.4);color:var(--green)}
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">
+      <div class="logo-icon">🎙</div>
+      <div class="logo-text">Voice<span>Scribe</span></div>
+    </div>
+    <div class="nav-right">
+      <a href="/history" class="nav-btn">📋 History</a>
+      <div class="status-pill" id="statusPill">
+        <span class="dot"></span>
+        <span id="statusText">Ready</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PROVIDER CARDS -->
+  <div class="provider-section">
+    <div class="section-label">Choose Provider</div>
+    <div class="provider-cards" id="providerCards">
+      <button class="provider-card active" data-value="sarvam" onclick="selectProvider(this)">
+        <div class="pc-name">Sarvam AI</div>
+        <div class="pc-tag">saaras:v3 · Real-time</div>
+        <span class="pc-badge badge-india">Indian langs</span>
+        <span class="pc-badge badge-fast" style="margin-left:.25rem">Live stream</span>
+      </button>
+      <button class="provider-card" data-value="groq" onclick="selectProvider(this)">
+        <div class="pc-name">Groq</div>
+        <div class="pc-tag">Whisper Large v3</div>
+        <span class="pc-badge badge-free">Free</span>
+        <span class="pc-badge badge-fast" style="margin-left:.25rem">Fast</span>
+      </button>
+      <button class="provider-card" data-value="deepgram" onclick="selectProvider(this)">
+        <div class="pc-name">Deepgram</div>
+        <div class="pc-tag">Nova-2 · Real-time</div>
+        <span class="pc-badge badge-fast">Live stream</span>
+      </button>
+      <button class="provider-card" data-value="assemblyai" onclick="selectProvider(this)">
+        <div class="pc-name">AssemblyAI</div>
+        <div class="pc-tag">Best-async</div>
+        <span class="pc-badge badge-accurate">Accurate</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTROLS ROW -->
+  <div class="controls-row">
+    <div class="field">
+      <label>Language</label>
+      <select id="langSelect"></select>
+    </div>
+    <label class="llm-toggle" title="Get AI response after each transcription">
+      <input type="checkbox" id="llmToggle"/>
+      <span class="llm-track"></span>
+      AI Reply
+    </label>
+    <button class="btn-record" id="recordBtn" onclick="toggleRecording()">
+      <span id="btnIcon">●</span>
+      <span id="btnText">Start Recording</span>
+    </button>
+  </div>
+
+  <!-- VOLUME BAR -->
+  <div class="volume-wrap" id="volumeWrap">
+    <span class="vol-label">Volume</span>
+    <div class="vol-track"><div class="vol-fill" id="volFill"></div></div>
+  </div>
+
+  <!-- TRANSCRIPT ACTION BAR -->
+  <div class="transcript-actions">
+    <button class="action-btn" onclick="copyTranscript()" title="Copy transcript (or press C)">⧉ Copy</button>
+    <button class="action-btn danger" onclick="clearTranscript()" title="Clear transcript">✕ Clear</button>
+    <button class="scroll-btn active" id="scrollBtn" onclick="toggleAutoScroll()" title="Toggle auto-scroll to bottom">↓ Auto-scroll</button>
+  </div>
+
+  <!-- TRANSCRIPT -->
+  <div class="transcript-wrap">
+    <div class="transcript-inner" id="transcriptInner">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">🎤</div>
+        <div class="empty-text">Select a provider, choose your language, and press <strong>Start Recording</strong>.<br/>Transcription appears after each sentence.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat">Provider <span class="stat-val" id="statProvider">Sarvam AI</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat">Segments <span class="stat-val" id="statSegs">0</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat">Words <span class="stat-val" id="statWords">0</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat">Duration <span class="stat-val" id="statDur">0s</span></div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  var selectedProvider = 'sarvam';
+  var ws = null, audioCtx = null, micStream = null, processor = null, analyser = null;
+  var silenceTimer = null, hasSpeech = false, recording = false;
+  var segCount = 0, wordCount = 0, recStart = null;
+  var durInterval = null;
+  var autoScroll = true;
+  var lastSpeaker = null;
+
+  var SILENCE_THRESHOLD = 3;   // RMS on 0-100 scale
+  var SILENCE_DELAY_MS = 500;  // flush 500ms after speech stops
+  var MAX_CHUNK_MS = 1500;     // force-flush every 1.5s during continuous speech
+  var lastFlushTime = 0;
+
+  var PROVIDER_NAMES = {
+    sarvam: 'Sarvam AI', groq: 'Groq', deepgram: 'Deepgram', assemblyai: 'AssemblyAI'
+  };
+
+  // Languages actually supported by each provider
+  var PROVIDER_LANGUAGES = {
+    sarvam: [
+      ['en-IN', 'English (India)'],
+      ['hi-IN', 'Hindi'],
+      ['ta-IN', 'Tamil'],
+      ['te-IN', 'Telugu'],
+      ['kn-IN', 'Kannada'],
+      ['ml-IN', 'Malayalam'],
+      ['mr-IN', 'Marathi'],
+      ['bn-IN', 'Bengali'],
+      ['gu-IN', 'Gujarati'],
+      ['od-IN', 'Odia'],
+      ['pa-IN', 'Punjabi']
+    ],
+    groq: [
+      ['en', 'English'],
+      ['hi', 'Hindi'],
+      ['fr', 'French'],
+      ['de', 'German'],
+      ['es', 'Spanish'],
+      ['it', 'Italian'],
+      ['pt', 'Portuguese'],
+      ['ru', 'Russian'],
+      ['zh', 'Chinese'],
+      ['ja', 'Japanese'],
+      ['ko', 'Korean'],
+      ['ar', 'Arabic'],
+      ['nl', 'Dutch'],
+      ['pl', 'Polish'],
+      ['tr', 'Turkish'],
+      ['vi', 'Vietnamese'],
+      ['id', 'Indonesian'],
+      ['uk', 'Ukrainian'],
+      ['sv', 'Swedish']
+    ],
+    deepgram: [
+      ['en', 'English'],
+      ['hi', 'Hindi'],
+      ['es', 'Spanish'],
+      ['fr', 'French'],
+      ['de', 'German'],
+      ['it', 'Italian'],
+      ['pt', 'Portuguese'],
+      ['nl', 'Dutch'],
+      ['ja', 'Japanese'],
+      ['ko', 'Korean'],
+      ['zh', 'Chinese'],
+      ['ru', 'Russian'],
+      ['tr', 'Turkish'],
+      ['uk', 'Ukrainian'],
+      ['pl', 'Polish'],
+      ['sv', 'Swedish'],
+      ['da', 'Danish'],
+      ['fi', 'Finnish'],
+      ['id', 'Indonesian']
+    ],
+    assemblyai: [
+      ['en', 'English'],
+      ['hi', 'Hindi'],
+      ['es', 'Spanish'],
+      ['fr', 'French'],
+      ['de', 'German'],
+      ['it', 'Italian'],
+      ['pt', 'Portuguese'],
+      ['nl', 'Dutch'],
+      ['ja', 'Japanese'],
+      ['ko', 'Korean'],
+      ['zh', 'Chinese'],
+      ['ru', 'Russian'],
+      ['uk', 'Ukrainian'],
+      ['pl', 'Polish'],
+      ['fi', 'Finnish'],
+      ['tr', 'Turkish'],
+      ['vi', 'Vietnamese'],
+      ['id', 'Indonesian']
+    ]
+  };
+
+  function updateLanguageOptions(provider) {
+    var sel = document.getElementById('langSelect');
+    var langs = PROVIDER_LANGUAGES[provider] || [];
+    sel.innerHTML = langs.map(function(l){
+      return '<option value="' + l[0] + '">' + l[1] + '</option>';
+    }).join('');
+  }
+
+  function selectProvider(el) {
+    if (recording) return;
+    document.querySelectorAll('.provider-card').forEach(function(c){ c.classList.remove('active'); });
+    el.classList.add('active');
+    selectedProvider = el.dataset.value;
+    document.getElementById('statProvider').textContent = PROVIDER_NAMES[selectedProvider];
+    updateLanguageOptions(selectedProvider);
+  }
+
+  function setStatus(state, text) {
+    var pill = document.getElementById('statusPill');
+    pill.className = 'status-pill ' + state;
+    document.getElementById('statusText').textContent = text;
+  }
+
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 4000);
+  }
+
+  function float32ToInt16(f32) {
+    var out = new Int16Array(f32.length);
+    for (var i = 0; i < f32.length; i++) {
+      var s = Math.max(-1, Math.min(1, f32[i]));
+      out[i] = s < 0 ? s * 32768 : s * 32767;
+    }
+    return out;
+  }
+
+  function sendFlush() {
+    if (ws && ws.readyState === WebSocket.OPEN && hasSpeech) {
+      ws.send(JSON.stringify({ type: 'flush' }));
+      hasSpeech = false;
+      lastFlushTime = Date.now();
+    }
+  }
+
+  function addSegment(text, startTime, endTime, llmReply, speaker) {
+    speaker = speaker || 'speaker_0';
+    document.getElementById('emptyState').style.display = 'none';
+    var inner = document.getElementById('transcriptInner');
+
+    // Speaker label when speaker changes
+    if (speaker !== lastSpeaker) {
+      lastSpeaker = speaker;
+      var spkNum = parseInt((speaker.split('_')[1] || '0'), 10);
+      var lbl = document.createElement('div');
+      lbl.className = 'speaker-label spk-' + spkNum;
+      lbl.textContent = 'Speaker ' + (spkNum + 1);
+      inner.appendChild(lbl);
+      // New text block per speaker turn
+      var old = document.getElementById('transcriptText');
+      if (old) old.removeAttribute('id');
+    }
+
+    // Get or create the single continuous text node
+    var textEl = document.getElementById('transcriptText');
+    if (!textEl) {
+      textEl = document.createElement('div');
+      textEl.id = 'transcriptText';
+      textEl.className = 'transcript-text';
+      inner.appendChild(textEl);
+    }
+
+    // Append new words with a highlight span that fades to normal
+    var safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').trim();
+    var span = document.createElement('span');
+    span.className = 'word-new';
+    span.textContent = (textEl.textContent.length > 0 ? ' ' : '') + safe;
+    textEl.appendChild(span);
+
+    // Show LLM reply if present
+    if (llmReply) {
+      var bubble = document.createElement('div');
+      bubble.className = 'llm-reply';
+      bubble.innerHTML = '<div class="llm-label">AI</div>'
+        + llmReply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      inner.appendChild(bubble);
+      // New transcript text block after LLM reply
+      var cur = document.getElementById('transcriptText');
+      if (cur) cur.removeAttribute('id');
+      textEl = document.createElement('div');
+      textEl.id = 'transcriptText';
+      textEl.className = 'transcript-text';
+      inner.appendChild(textEl);
+    }
+
+    if (autoScroll) document.querySelector('.transcript-wrap').scrollTop = 99999;
+
+    segCount++;
+    wordCount += text.trim().split(/\s+/).length;
+    document.getElementById('statSegs').textContent = segCount;
+    document.getElementById('statWords').textContent = wordCount;
+    setStatus('live', 'Listening...');
+  }
+
+  function openWS() {
+    var lang = document.getElementById('langSelect').value;
+    var useLLM = document.getElementById('llmToggle').checked;
+    var url = 'ws://' + location.host + '/ws/stream?provider=' + selectedProvider
+            + '&language=' + lang + '&llm=' + useLLM;
+    ws = new WebSocket(url);
+    ws.binaryType = 'arraybuffer';
+    ws.onopen  = function(){ setStatus('live', 'Listening...'); };
+    ws.onerror = function(){ showToast('Connection failed — is the server running?'); stopRecording(); };
+    ws.onclose = function(){ if (recording) stopRecording(); };
+    ws.onmessage = function(ev){
+      try {
+        var d = JSON.parse(ev.data);
+        if (d.type === 'error'){ showToast(d.message); return; }
+        if (d.text) addSegment(d.text, d.start_time, d.end_time, d.llm_reply, d.speaker);
+      } catch(e){}
+    };
+  }
+
+  async function startRecording() {
+    try { micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false }); }
+    catch(e){ showToast('Microphone access denied.'); return; }
+
+    openWS();
+    document.getElementById('statProvider').textContent = PROVIDER_NAMES[selectedProvider];
+    document.querySelectorAll('.provider-card').forEach(function(c){ c.style.pointerEvents='none'; });
+
+    audioCtx      = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+    var source    = audioCtx.createMediaStreamSource(micStream);
+    processor     = audioCtx.createScriptProcessor(4096, 1, 1);
+    var nRate     = audioCtx.sampleRate, tRate = 16000;
+
+    processor.onaudioprocess = function(e) {
+      var raw = e.inputBuffer.getChannelData(0);
+
+      // RMS from raw float32 samples (-1..1). Always run so volume bar stays live.
+      var sum = 0;
+      for (var j = 0; j < raw.length; j++) sum += raw[j] * raw[j];
+      var rms = Math.sqrt(sum / raw.length) * 100;  // scale to 0-100
+      var pct = Math.min(rms * 5, 100);
+      document.getElementById('volFill').style.width = pct + '%';
+      document.getElementById('volFill').className = 'vol-fill' + (pct > 70 ? ' loud' : '');
+
+      if (!recording) return;
+
+      // Silence detection + periodic force-flush during continuous speech
+      if (rms > SILENCE_THRESHOLD) {
+        if (!hasSpeech) { hasSpeech = true; lastFlushTime = Date.now(); }
+        if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+        setStatus('live', 'Listening...');
+        // Force-flush if speaking continuously for too long
+        if (Date.now() - lastFlushTime > MAX_CHUNK_MS) {
+          sendFlush();
+        }
+      } else if (hasSpeech && !silenceTimer) {
+        silenceTimer = setTimeout(function() { sendFlush(); silenceTimer = null; }, SILENCE_DELAY_MS);
+      }
+
+      // Only send audio bytes once WS is open
+      if (!ws || ws.readyState !== WebSocket.OPEN) return;
+      var samples = raw;
+      if (nRate !== tRate) {
+        var ratio = nRate / tRate, outLen = Math.round(raw.length / ratio);
+        var rs = new Float32Array(outLen);
+        for (var i = 0; i < outLen; i++) rs[i] = raw[Math.round(i * ratio)];
+        samples = rs;
+      }
+      ws.send(float32ToInt16(samples).buffer);
+    };
+
+    source.connect(processor);
+    processor.connect(audioCtx.destination);
+
+    recording = true;
+    recStart = Date.now();
+    lastFlushTime = Date.now();
+    durInterval = setInterval(function(){
+      var s = Math.floor((Date.now()-recStart)/1000);
+      document.getElementById('statDur').textContent = s<60 ? s+'s' : Math.floor(s/60)+'m '+s%60+'s';
+    }, 1000);
+
+    document.getElementById('volumeWrap').style.display = 'flex';
+    document.getElementById('recordBtn').classList.add('recording');
+    document.getElementById('btnText').textContent = 'Stop Recording';
+    document.getElementById('btnIcon').textContent = '■';
+  }
+
+  function stopRecording() {
+    recording = false;
+    clearTimeout(silenceTimer); silenceTimer = null;
+    clearInterval(durInterval);
+
+    document.getElementById('volumeWrap').style.display = 'none';
+    document.getElementById('volFill').style.width = '0%';
+    document.getElementById('recordBtn').classList.remove('recording');
+    document.getElementById('btnText').textContent = 'Start Recording';
+    document.getElementById('btnIcon').textContent = '●';
+    document.querySelectorAll('.provider-card').forEach(function(c){ c.style.pointerEvents=''; });
+    setStatus('', 'Ready');
+
+    if (processor){ processor.disconnect(); processor=null; }
+    if (audioCtx){ audioCtx.close(); audioCtx=null; }
+    if (micStream){ micStream.getTracks().forEach(function(t){ t.stop(); }); micStream=null; }
+    if (ws && ws.readyState === WebSocket.OPEN){
+      ws.send(JSON.stringify({ type:'end' }));
+      setTimeout(function(){ if(ws){ ws.close(); ws=null; } }, 5000);
+    }
+  }
+
+  function toggleRecording(){ if (recording) stopRecording(); else startRecording(); }
+
+  function copyTranscript() {
+    var parts = [];
+    document.querySelectorAll('#transcriptInner .transcript-text').forEach(function(el) {
+      var t = el.textContent.trim();
+      if (t) parts.push(t);
+    });
+    if (!parts.length) { showToast('Nothing to copy yet.'); return; }
+    navigator.clipboard.writeText(parts.join(' ')).then(function() {
+      showToastSuccess('Transcript copied!');
+    }).catch(function() { showToast('Copy failed — try selecting manually.'); });
+  }
+
+  function clearTranscript() {
+    var inner = document.getElementById('transcriptInner');
+    inner.innerHTML =
+      '<div class="empty-state" id="emptyState">' +
+        '<div class="empty-icon">🎤</div>' +
+        '<div class="empty-text">Select a provider, choose your language, and press <strong>Start Recording</strong>.<br/>Transcription appears after each sentence.</div>' +
+      '</div>';
+    segCount = 0; wordCount = 0; lastSpeaker = null;
+    document.getElementById('statSegs').textContent = '0';
+    document.getElementById('statWords').textContent = '0';
+  }
+
+  function toggleAutoScroll() {
+    autoScroll = !autoScroll;
+    var btn = document.getElementById('scrollBtn');
+    btn.className = 'scroll-btn' + (autoScroll ? ' active' : '');
+    btn.textContent = (autoScroll ? '↓' : '↕') + ' Auto-scroll';
+  }
+
+  function showToastSuccess(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast success show';
+    setTimeout(function(){ t.className = 'toast'; }, 3000);
+  }
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    var tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
+    if (e.code === 'Space') { e.preventDefault(); toggleRecording(); }
+    if (e.key === 'c' || e.key === 'C') copyTranscript();
+  });
+
+  // Populate language dropdown for the default provider on load
+  updateLanguageOptions(selectedProvider);
+</script>
+</body>
+</html>
