@@ -298,7 +298,11 @@ function startLiveDisplay() {
     liveRec.onend = () => {
       if (isRecording && liveRec) try { liveRec.start(); } catch (_) {}
     };
-    liveRec.onerror = () => {}; // display-only — ignore errors
+    liveRec.onerror = (e) => {
+      if (e.error !== 'aborted' && e.error !== 'no-speech') {
+        transcriptText.textContent = 'Listening... (live preview unavailable)';
+      }
+    };
     liveRec.start();
   } catch (_) {}
 }
@@ -464,7 +468,7 @@ async function startRecording(e) {
       const stream = await getMicStream();
       startMediaRecorder(stream);
       startSilenceDetection(stream);
-      startLiveDisplay();               // show live words while recording
+      setTimeout(startLiveDisplay, 300); // small delay so MediaRecorder initialises first
     } catch (err) {
       console.error('[Mic error]', err);
       showError('Microphone access denied. Please allow microphone permission and try again.');
