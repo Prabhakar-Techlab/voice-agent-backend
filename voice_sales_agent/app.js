@@ -465,10 +465,13 @@ async function startRecording(e) {
     // MediaRecorder mode (Deepgram / AssemblyAI / Sarvam)
     transcriptText.textContent = 'Listening...';
     try {
+      // Start live display FIRST so Web Speech gets mic access before MediaRecorder
+      startLiveDisplay();
+      await new Promise(r => setTimeout(r, 400));
+
       const stream = await getMicStream();
       startMediaRecorder(stream);
       startSilenceDetection(stream);
-      setTimeout(startLiveDisplay, 300); // small delay so MediaRecorder initialises first
     } catch (err) {
       console.error('[Mic error]', err);
       showError('Microphone access denied. Please allow microphone permission and try again.');
