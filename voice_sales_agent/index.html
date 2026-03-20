@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Nothing — Sales Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app" id="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <div class="brand-mark">
+          <span class="brand-dot"></span>
+          <span class="brand-dot"></span>
+          <span class="brand-dot"></span>
+        </div>
+        <span class="brand-name">Sales Agent</span>
+      </div>
+      <div class="header-actions">
+        <div class="connection-status" id="connectionStatus">
+          <span class="conn-dot"></span>
+          <span class="conn-label">Ready</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="newSessionBtn" title="New session">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>New</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Model Selector Bar -->
+    <div class="model-bar" id="modelBar">
+
+      <button class="model-card active" data-model="phone-4a">
+        <div class="mc-top">
+          <span class="mc-badge featured">FEATURED</span>
+          <span class="mc-price">&#8377;28,999</span>
+        </div>
+        <div class="mc-name">Nothing Phone (4a)</div>
+        <div class="mc-tag">Best Value</div>
+        <div class="mc-specs">
+          <span>6.78" AMOLED · 4500 nits</span>
+          <span>SD 7s Gen 4 · 8GB RAM</span>
+          <span>50MP + 70x Zoom · OIS</span>
+          <span>5400mAh · 50W · IP64</span>
+        </div>
+      </button>
+
+      <button class="model-card" data-model="phone-3a">
+        <div class="mc-top">
+          <span class="mc-badge popular">BEST SELLER</span>
+          <span class="mc-price">&#8377;26,999</span>
+        </div>
+        <div class="mc-name">Nothing Phone (3a)</div>
+        <div class="mc-tag">Most Popular</div>
+        <div class="mc-specs">
+          <span>6.77" AMOLED · 120Hz</span>
+          <span>SD 7s Gen 3 · 8GB/12GB RAM</span>
+          <span>50MP + 50MP Tele · 2x Optical</span>
+          <span>5000mAh · 2-day · IP64</span>
+        </div>
+      </button>
+
+      <button class="model-card" data-model="phone-3a-pro">
+        <div class="mc-top">
+          <span class="mc-badge pro">PRO</span>
+          <span class="mc-price">&#8377;32,999</span>
+        </div>
+        <div class="mc-name">Nothing Phone (3a) Pro</div>
+        <div class="mc-tag">Pro Camera</div>
+        <div class="mc-specs">
+          <span>6.77" AMOLED · 3000 nits</span>
+          <span>SD 7s Gen 3 · 12GB RAM</span>
+          <span>50MP Periscope · 3x/60x Zoom</span>
+          <span>5000mAh · 50W · Vapor Chamber</span>
+        </div>
+      </button>
+
+      <button class="model-card" data-model="phone-3">
+        <div class="mc-top">
+          <span class="mc-badge flagship">FLAGSHIP</span>
+          <span class="mc-price">&#8377;52,999</span>
+        </div>
+        <div class="mc-name">Nothing Phone (3)</div>
+        <div class="mc-tag">Most Powerful</div>
+        <div class="mc-specs">
+          <span>6.67" AMOLED · 4500 nits</span>
+          <span>SD 8s Gen 4 · 12GB/16GB RAM</span>
+          <span>Quad 50MP · 3x/60x Zoom</span>
+          <span>5500mAh · 65W + 15W Wireless · IP68</span>
+        </div>
+      </button>
+
+    </div>
+
+    <!-- Main Layout -->
+    <main class="main-content">
+
+      <!-- Left: Voice Panel -->
+      <section class="voice-panel">
+
+        <!-- Language Selector -->
+        <div class="lang-selector">
+          <span class="stt-label">Language</span>
+          <div class="lang-tabs">
+            <button class="lang-tab active" data-lang="en-IN">English</button>
+            <button class="lang-tab" data-lang="hi-IN">Hindi</button>
+            <button class="lang-tab" data-lang="hinglish">Hinglish</button>
+          </div>
+        </div>
+
+        <!-- STT Provider Selector -->
+        <div class="stt-selector">
+          <span class="stt-label">Voice engine</span>
+          <div class="stt-tabs">
+            <button class="stt-tab active" data-provider="deepgram">
+              <span class="stt-dot dg"></span>Deepgram
+            </button>
+            <button class="stt-tab" data-provider="assemblyai">
+              <span class="stt-dot aai"></span>AssemblyAI
+            </button>
+            <button class="stt-tab" data-provider="sarvam">
+              <span class="stt-dot sv"></span>Sarvam
+            </button>
+            <button class="stt-tab" data-provider="webspeech">
+              <span class="stt-dot ws"></span>Browser
+            </button>
+          </div>
+        </div>
+
+        <!-- Recording Status -->
+        <div class="rec-status" id="recStatus">
+          <span class="rec-dot idle" id="recDot"></span>
+          <span class="rec-text" id="recText">Ready to listen</span>
+        </div>
+
+        <!-- Mic Button Area -->
+        <div class="mic-wrap">
+          <div class="mic-rings" id="micRings">
+            <div class="ring r1"></div>
+            <div class="ring r2"></div>
+            <div class="ring r3"></div>
+          </div>
+          <button class="mic-btn" id="micBtn" aria-label="Hold to listen">
+            <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="2" width="6" height="12" rx="3"/>
+              <path d="M5 10v2a7 7 0 0 0 14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="8" y1="22" x2="16" y2="22"/>
+            </svg>
+            <svg class="stop-icon hidden" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </button>
+        </div>
+        <p class="mic-hint" id="micHint">Click to listen to customer</p>
+
+        <!-- Browser support warning -->
+        <div class="browser-warn hidden" id="browserWarn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Voice recognition requires Chrome or Edge browser.
+        </div>
+
+        <!-- Live Transcript Box -->
+        <div class="transcript-box hidden" id="transcriptBox">
+          <div class="transcript-label">Customer is saying...</div>
+          <p class="transcript-text" id="transcriptText"></p>
+        </div>
+
+        <!-- Conversation History -->
+        <div class="history-wrap">
+          <div class="history-header">
+            <span class="history-title">Session log</span>
+            <span class="history-count" id="historyCount">0 exchanges</span>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="history-empty">Start a conversation to see the log here.</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right: Suggestions Panel -->
+      <section class="suggestions-panel">
+
+        <!-- Selected Model Reference -->
+        <div class="model-ref" id="modelRef">
+          <div class="model-ref-left">
+            <div class="model-glyph" id="modelGlyph">
+              <div class="glyph-line"></div>
+              <div class="glyph-line short"></div>
+              <div class="glyph-line"></div>
+            </div>
+            <div>
+              <div class="model-ref-name" id="modelRefName">Nothing Phone (4a)</div>
+              <div class="model-ref-variant" id="modelRefVariant">8GB RAM &bull; 256GB &bull; Black/White/Pink/Blue</div>
+            </div>
+          </div>
+          <div class="model-ref-price" id="modelRefPrice">&#8377;28,999</div>
+        </div>
+
+        <!-- Key Highlights Chips -->
+        <div class="highlights-row" id="highlightsRow"></div>
+
+        <!-- Quick Scenario Buttons -->
+        <div class="scenarios-wrap">
+          <span class="scenarios-label">Quick triggers</span>
+          <div class="scenarios-list">
+            <button class="scenario-btn" data-scenario="price">Price too high</button>
+            <button class="scenario-btn" data-scenario="brand">Unknown brand</button>
+            <button class="scenario-btn" data-scenario="camera">Camera quality</button>
+            <button class="scenario-btn" data-scenario="battery">Battery life</button>
+            <button class="scenario-btn" data-scenario="comparison">vs Samsung</button>
+            <button class="scenario-btn" data-scenario="gaming">Gaming</button>
+            <button class="scenario-btn" data-scenario="warranty">Warranty</button>
+            <button class="scenario-btn" data-scenario="storage">Storage</button>
+          </div>
+        </div>
+
+        <!-- AI States -->
+
+        <!-- Idle -->
+        <div class="ai-state ai-idle" id="aiIdle">
+          <div class="ai-idle-icon">
+            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="24" cy="24" r="20"/>
+              <path d="M16 24h16M24 16v16" opacity="0.3"/>
+              <circle cx="24" cy="24" r="4" fill="currentColor" opacity="0.2"/>
+            </svg>
+          </div>
+          <p class="ai-idle-title">Waiting for customer input</p>
+          <p class="ai-idle-sub">Hold the mic button while your customer speaks, or use a quick trigger above.</p>
+        </div>
+
+        <!-- Processing -->
+        <div class="ai-state ai-processing hidden" id="aiProcessing">
+          <div class="processing-ring">
+            <div class="proc-inner"></div>
+          </div>
+          <p class="proc-label">Generating response...</p>
+          <p class="proc-sub" id="procTranscript"></p>
+        </div>
+
+        <!-- Results -->
+        <div class="ai-state ai-results hidden" id="aiResults">
+
+          <div class="result-card card-primary">
+            <div class="card-header">
+              <div class="card-num">1</div>
+              <span class="card-label">Say this</span>
+            </div>
+            <p class="card-text" id="keyPoint"></p>
+          </div>
+
+          <div class="result-card card-secondary">
+            <div class="card-header">
+              <div class="card-num">2</div>
+              <span class="card-label">Add this fact</span>
+            </div>
+            <p class="card-text" id="supportingFact"></p>
+          </div>
+
+          <div class="result-card card-tertiary">
+            <div class="card-header">
+              <div class="card-num">3</div>
+              <span class="card-label">Close with</span>
+            </div>
+            <p class="card-text" id="closingLine"></p>
+          </div>
+
+          <button class="copy-response-btn" id="copyResponseBtn" title="Copy response">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Copy
+          </button>
+
+          <button class="listen-again-btn" id="listenAgainBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="9" y="2" width="6" height="12" rx="3"/>
+              <path d="M5 10v2a7 7 0 0 0 14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="22"/>
+            </svg>
+            Listen Again
+          </button>
+
+        </div>
+
+        <!-- Error State -->
+        <div class="ai-state ai-error hidden" id="aiError">
+          <div class="error-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <p class="error-msg" id="errorMsg">Something went wrong. Please try again.</p>
+          <button class="retry-btn" id="retryBtn">Try Again</button>
+        </div>
+
+        <!-- Conversation Thread -->
+        <div class="convo-thread hidden" id="convoThread">
+          <div class="convo-thread-header">
+            <span class="convo-thread-title">Conversation history</span>
+            <span class="convo-thread-count" id="convoCount"></span>
+          </div>
+          <div class="convo-list" id="convoList"></div>
+        </div>
+
+      </section>
+    </main>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
