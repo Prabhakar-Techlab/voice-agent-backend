@@ -1,0 +1,11 @@
+{
+  "name": "Nothing Phone Sales Agent",
+  "short_name": "Sales Agent",
+  "description": "AI-powered voice sales assistant for Nothing Phone",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": []
+}
